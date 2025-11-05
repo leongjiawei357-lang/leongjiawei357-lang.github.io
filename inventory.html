@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory | Inventory System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>📦 Inventory Management</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="inventory.html">Inventory</a>
+      <a href="documents.html">Documents</a>
+      <a href="log.html">Activity Log</a>
+      <button onclick="toggleTheme()">🌓 Mode</button>
+      <button onclick="logout()">🚪 Logout</button>
+      <div id="adminInfo">Logged in as: <span id="adminName"></span></div>
+    </nav>
+  </header>
+
+  <section>
+    <h2>Inventory List</h2>
+    <input type="text" id="searchInput" placeholder="Search item or SKU..." onkeyup="searchItems()" />
+    <!-- Redirect to inventory-edit.html for adding new item -->
+    <button onclick="window.location.href='inventory-edit.html'">➕ Add Item</button>
+
+    <table id="inventoryTable">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Name</th>
+          <th>Quantity</th>
+          <th>Category</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script src="script.js"></script>
+  <script>
+    // ===============================
+    // UPDATE DISPLAY INVENTORY
+    // ===============================
+    function displayInventory() {
+      const tbody = document.querySelector("#inventoryTable tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      const inventory = JSON.parse(localStorage.getItem("inventoryData")) || [];
+
+      inventory.forEach((item, i) => {
+        const row = document.createElement("tr");
+        if (item.quantity < 5) row.classList.add("low-stock");
+        row.innerHTML = `
+          <td>${item.sku}</td>
+          <td>${item.name}</td>
+          <td>${item.quantity}</td>
+          <td>${item.category}</td>
+          <td>
+            <!-- Edit button redirects to edit page with index -->
+            <button onclick="window.location.href='inventory-edit.html?index=${i}'">✏️ Edit</button>
+            <button onclick="deleteItem(${i})">🗑</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function deleteItem(i) {
+      const inventory = JSON.parse(localStorage.getItem("inventoryData")) || [];
+      if (confirm("Delete this item?")) {
+        inventory.splice(i, 1);
+        localStorage.setItem("inventoryData", JSON.stringify(inventory));
+        displayInventory();
+      }
+    }
+
+    function searchItems() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      document.querySelectorAll("#inventoryTable tbody tr").forEach(r => {
+        const t = [...r.children].map(c => c.textContent.toLowerCase()).join(" ");
+        r.style.display = t.includes(q) ? "" : "none";
+      });
+    }
+
+    // Load inventory on page load
+    window.onload = displayInventory;
+  </script>
+</body>
+</html>
+
